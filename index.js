@@ -36,7 +36,28 @@ client.connect(err => {
 const run = async () => {
    try {
 
+      const productscollection = client.db('trushopping').collection('products')
 
+      // all products get requests
+
+   app.get('/products',  async (req, res) => {
+      const query = {}
+      let results
+      if( !req.query.limit  ){
+         results = await  productscollection.find(query).toArray()
+      }else {
+          const limit = parseInt(req.query.limit)
+         results = await  productscollection.find(query).limit(limit).toArray() 
+      }     
+      res.send(results)
+   })
+
+   // single product get request 
+   app.get('/products/:id',  async (req, res) => {
+      const query = {_id: ObjectId(req.params.id)}
+      const  results = await productscollection.findOne(query)
+      res.send(results)
+   })
 
    } finally {
 
