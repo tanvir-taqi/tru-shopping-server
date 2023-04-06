@@ -37,6 +37,7 @@ const run = async () => {
    try {
 
       const productscollection = client.db('trushopping').collection('products')
+      const orderscollection = client.db('trushopping').collection('orders')
 
       // all products get requests
 
@@ -56,6 +57,17 @@ const run = async () => {
    app.get('/products/:id',  async (req, res) => {
       const query = {_id: ObjectId(req.params.id)}
       const  results = await productscollection.findOne(query)
+      res.send(results)
+   })
+
+
+   // post orders 
+   app.post('/orders',  async (req, res) => {
+      const order = req.body
+      console.log('====================================');
+      console.log(order);
+      console.log('====================================');
+      const  results = await orderscollection.insertOne(order)
       res.send(results)
    })
 
