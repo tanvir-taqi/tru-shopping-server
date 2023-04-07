@@ -19,6 +19,7 @@ app.get("/", (req, res) => {
 
 
 
+
 const uri = process.env.DB_ACCESS
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 client.connect(err => {
@@ -41,35 +42,92 @@ const run = async () => {
 
       // all products get requests
 
-   app.get('/products',  async (req, res) => {
-      const query = {}
-      let results
-      if( !req.query.limit  ){
-         results = await  productscollection.find(query).toArray()
-      }else {
-          const limit = parseInt(req.query.limit)
-         results = await  productscollection.find(query).limit(limit).toArray() 
-      }     
-      res.send(results)
-   })
+      app.get('/products', async (req, res) => {
+         const query = {}
+         let results
+         if (!req.query.limit) {
+            results = await productscollection.find(query).toArray()
+         } else {
+            const limit = parseInt(req.query.limit)
+            results = await productscollection.find(query).limit(limit).toArray()
+         }
+         res.send(results)
+      })
 
-   // single product get request 
-   app.get('/products/:id',  async (req, res) => {
-      const query = {_id: ObjectId(req.params.id)}
-      const  results = await productscollection.findOne(query)
-      res.send(results)
-   })
+      // single product get request 
+      app.get('/products/:id', async (req, res) => {
+         const query = { _id: ObjectId(req.params.id) }
+         const results = await productscollection.findOne(query)
+         res.send(results)
+      })
 
 
-   // post orders 
-   app.post('/orders',  async (req, res) => {
-      const order = req.body
-      console.log('====================================');
-      console.log(order);
-      console.log('====================================');
-      const  results = await orderscollection.insertOne(order)
-      res.send(results)
-   })
+      // add products to prodduct collection
+
+      app.post('/products', async (req, res) => {
+         const product = req.body
+         const result = await productscollection.insertOne(product)
+         res.send(result)
+      })
+
+
+      //  stock update api
+      app.put('/products/:id', async (req, res) => {
+         const products = req.params.id;
+         const stock = req.body.stock;
+
+         const filter = { _id: ObjectId(products) }
+         const options = { upsert: true }
+         const updatedDoc = {
+            $set: {
+               stock: stock
+            }
+         }
+         const result = await productscollection.updateOne(filter, updatedDoc, options)
+
+         res.send(result)
+      })
+
+      //delete product
+      app.delete('/product/:id', async (req, res) => {
+         const query = { _id: ObjectId(req.params.id) }
+         const results = await productscollection.deleteOne(query)
+         res.send(results)
+      })
+
+      // post orders 
+      app.post('/orders', async (req, res) => {
+         const order = req.body
+
+         const results = await orderscollection.insertOne(order)
+         res.send(results)
+      })
+
+      // get all orders
+      app.get('/orderlist', async (req, res) => {
+         const query = {}
+         results = await orderscollection.find(query).toArray()
+         res.send(results)
+      })
+
+      //update order status
+      app.put('/orderlist/:id', async (req, res) => {
+         const orderID = req.params.id;
+         const orderData = req.body.status;
+         console.log('====================================');
+         console.log(orderData);
+         console.log('====================================');
+         const filter = { _id: ObjectId(orderID) }
+         const options = { upsert: true }
+         const updatedDoc = {
+            $set: {
+               status: orderData
+            }
+         }
+         const result = await orderscollection.updateOne(filter, updatedDoc, options)
+
+         res.send(result)
+      })
 
    } finally {
 
