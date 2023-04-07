@@ -106,7 +106,7 @@ const run = async () => {
       // get all orders
       app.get('/orderlist', async (req, res) => {
          const query = {}
-         results = await orderscollection.find(query).toArray()
+         results = await orderscollection.find(query).sort({date:-1}).toArray()
          res.send(results)
       })
 
